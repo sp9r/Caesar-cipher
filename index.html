@@ -2,190 +2,69 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; script-src-attr 'none'; style-src 'self'; style-src-attr 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>暗号化・復号化パスワード変換器</title>
-  <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background-color: #f4f4f4;
-      text-align: center;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 400px;
-      background: white;
-      padding: 20px;
-      margin: 50px auto;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    h1 {
-      font-size: 20px;
-      color: #333;
-    }
-    label {
-      display: block;
-      text-align: left;
-      font-weight: bold;
-      margin-top: 10px;
-    }
-    input, button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-    .radio-group {
-      display: flex;
-      justify-content: space-around;
-      margin: 10px 0;
-    }
-    button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    .result-container {
-      background: #f9f9f9;
-      padding: 10px;
-      border-radius: 5px;
-      margin-top: 10px;
-      text-align: center;
-    }
-    #result {
-      font-size: 18px;
-      font-weight: bold;
-      word-break: keep-all;
-      white-space: nowrap;
-      overflow-x: auto;
-      max-width: 100%;
-      display: inline-block;
-    }
-    .copy-btn {
-      background: #28a745;
-      padding: 5px 8px;
-      font-size: 12px;
-      cursor: pointer;
-      border: none;
-      color: white;
-      border-radius: 5px;
-      margin-top: 5px;
-      transition: 0.3s;
-      width: auto;
-    }
-    .copy-btn:hover {
-      background: #218838;
-    }
-  </style>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./script.js" defer></script>
 </head>
 <body>
-
-  <div class="container">
+  <main class="container">
     <h1>暗号化・復号化パスワード変換器</h1>
-    <form id="cipherForm" onsubmit="processPassword(); return false;">
-      <label for="password">パスワード</label>
-      <input type="text" id="password" name="password" required placeholder="例: Ex3K2gY" autocomplete="off">
-      
-      <label for="key">鍵</label>
-      <input type="text" id="key" name="key" required placeholder="例: hoge123" autocomplete="off">
 
-      <div class="radio-group">
+    <p class="security-note">
+      新規暗号化には AES-256-GCM と PBKDF2-SHA-256 を使用します。
+      以前の文字ずらし方式は安全な暗号ではないため、新規暗号化には使用せず、既存データの復号だけ互換対応します。
+    </p>
+
+    <form id="cipherForm" autocomplete="off">
+      <label id="inputLabel" for="password">暗号化する文字列</label>
+      <textarea
+        id="password"
+        name="password"
+        required
+        maxlength="32768"
+        spellcheck="false"
+        autocapitalize="none"
+        autocomplete="off"
+        placeholder="暗号化したい文字列"
+      ></textarea>
+
+      <label for="key">鍵</label>
+      <input
+        type="password"
+        id="key"
+        name="key"
+        required
+        maxlength="1024"
+        spellcheck="false"
+        autocapitalize="none"
+        autocomplete="new-password"
+        placeholder="新規暗号化は12文字以上を推奨"
+      >
+
+      <div class="radio-group" role="group" aria-label="処理モード">
         <label>
-          <input type="radio" id="encrypt" name="mode" value="encrypt" checked> 暗号化
+          <input type="radio" id="encrypt" name="mode" value="encrypt" checked>
+          暗号化
         </label>
         <label>
-          <input type="radio" id="decrypt" name="mode" value="decrypt"> 復号化
+          <input type="radio" id="decrypt" name="mode" value="decrypt">
+          復号化
         </label>
       </div>
 
       <button type="submit">変換</button>
     </form>
 
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+
     <h2>結果：</h2>
     <div class="result-container">
-      <div id="result">---</div>
-      <button class="copy-btn" onclick="copyToClipboard()">コピー</button>
+      <output id="result">---</output>
+      <button type="button" id="copyButton" class="copy-btn" disabled>コピー</button>
     </div>
-  </div>
-
-  <script>
-    function processPassword() {
-      const password = document.getElementById("password").value;
-      const key = document.getElementById("key").value;
-      const mode = document.querySelector('input[name="mode"]:checked').value;
-      
-      let keyNums = [];
-      for (let i = 0; i < key.length; i++) {
-        const ch = key[i];
-        if (/[a-zA-Z]/.test(ch)) {
-          keyNums.push(ch.toLowerCase().charCodeAt(0) - 96);
-        } else if (/[0-9]/.test(ch)) {
-          keyNums.push(parseInt(ch, 10));
-        }
-      }
-      if (keyNums.length === 0) {
-        alert("鍵に有効な文字がありません！");
-        return;
-      }
-      
-      let result = "";
-      for (let i = 0; i < password.length; i++) {
-        const ch = password[i];
-        const shift = keyNums[i % keyNums.length];
-        
-        if (/[A-Z]/.test(ch)) {
-          let code = ch.charCodeAt(0) - 65;
-          code = (mode === "encrypt") ? (code - shift + 26) % 26 : (code + shift) % 26;
-          result += String.fromCharCode(code + 65);
-        } else if (/[a-z]/.test(ch)) {
-          let code = ch.charCodeAt(0) - 97;
-          code = (mode === "encrypt") ? (code - shift + 26) % 26 : (code + shift) % 26;
-          result += String.fromCharCode(code + 97);
-        } else if (/[0-9]/.test(ch)) {
-          let digit = parseInt(ch, 10);
-          digit = (mode === "encrypt") ? (digit - shift + 10) % 10 : (digit + shift) % 10;
-          result += digit.toString();
-        } else {
-          result += ch;
-        }
-      }
-      
-      document.getElementById("result").innerText = result;
-    }
-
-    function copyToClipboard() {
-      const resultText = document.getElementById("result").innerText;
-      const copyBtn = document.querySelector(".copy-btn");
-      
-      navigator.clipboard.writeText(resultText).then(() => {
-        copyBtn.innerText = "コピーしました！";
-        copyBtn.style.background = "#ffc107"; // 黄色で目立たせる
-        copyBtn.style.color = "#333";
-        
-        setTimeout(() => {
-          copyBtn.innerText = "コピー";
-          copyBtn.style.background = "#28a745"; // 元の緑色に戻す
-          copyBtn.style.color = "white";
-        }, 2000);
-      }).catch(err => {
-        copyBtn.innerText = "コピー失敗";
-        copyBtn.style.background = "#dc3545"; // 赤でエラー表示
-        
-        setTimeout(() => {
-          copyBtn.innerText = "コピー";
-          copyBtn.style.background = "#28a745"; // 元の緑色に戻す
-        }, 2000);
-      });
-    }
-  </script>
-
+  </main>
 </body>
 </html>
