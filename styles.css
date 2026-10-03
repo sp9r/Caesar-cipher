@@ -1,0 +1,140 @@
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  color: #222;
+  text-align: center;
+  margin: 0;
+  padding: 24px;
+}
+
+.container {
+  max-width: 560px;
+  background: #fff;
+  padding: 24px;
+  margin: 32px auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  font-size: 22px;
+  margin-top: 0;
+}
+
+.security-note {
+  text-align: left;
+  background: #f3f7ff;
+  border: 1px solid #c9d9ff;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+label {
+  display: block;
+  text-align: left;
+  font-weight: bold;
+  margin-top: 12px;
+}
+
+input,
+textarea,
+button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font: inherit;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 88px;
+}
+
+.radio-group {
+  display: flex;
+  gap: 16px;
+  margin: 14px 0;
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-weight: normal;
+}
+
+.radio-group input {
+  width: auto;
+  margin: 0;
+}
+
+button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.result-container {
+  background: #f9f9f9;
+  padding: 12px;
+  border-radius: 5px;
+  margin-top: 10px;
+  text-align: left;
+}
+
+#result {
+  display: block;
+  min-height: 1.5em;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.copy-btn {
+  background: #28a745;
+  padding: 7px 10px;
+  font-size: 13px;
+  width: auto;
+}
+
+.copy-btn:hover:not(:disabled) {
+  background: #218838;
+}
+
+.status {
+  min-height: 1.5em;
+  margin: 12px 0 0;
+  text-align: left;
+  font-size: 14px;
+}
+
+.status.error {
+  color: #b00020;
+}
+
+.status.warning {
+  color: #7a4b00;
+}
